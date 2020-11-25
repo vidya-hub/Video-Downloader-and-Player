@@ -1,8 +1,6 @@
 import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_downloader/vidioplayerpage.dart';
@@ -119,6 +117,7 @@ class _MyAppState extends State<MyApp> {
               setState(() {
                 _isDownloading = false;
               });
+
               showSnackBar("Downloaded.. ", 1000);
               _scaffoldKey.currentState.removeCurrentSnackBar();
               // Scaffold.of(context).hideCurrentSnackBar();
@@ -127,8 +126,9 @@ class _MyAppState extends State<MyApp> {
               setState(() {
                 _isDownloading = true;
               });
+              // double percentage = ((total - rec) / total) * 100;
+              showSnackBar("Downloading.....", 0);
             }
-            showSnackBar("Downloading.....", 0);
           },
         );
 
@@ -136,10 +136,16 @@ class _MyAppState extends State<MyApp> {
       } else {
         print("incorrect");
         showSnackBar("Enter the Correct Url", 1000);
+        setState(() {
+          _isDownloading = false;
+        });
       }
     } catch (e) {
       showSnackBar(e.toString(), 1000);
       print(e);
+      setState(() {
+        _isDownloading = false;
+      });
     }
   }
 
@@ -162,7 +168,7 @@ class _MyAppState extends State<MyApp> {
                   child: Text('OK',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.yellow,
+                        color: Colors.blue,
                         fontSize: 20,
                       )),
                   onPressed: () {
@@ -211,70 +217,111 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      // appBar: ,
       body: Builder(builder: (BuildContext context) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(gapPadding: 20),
-                  labelText: "Enter Video Url",
-                  // helperText: _controller.text.isEmpty ? "" : "Enter Url",
+        return SingleChildScrollView(
+          child: SafeArea(
+            child: Column(
+              // mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.2,
                 ),
-              ),
-            ),
-            SizedBox(
-              height: 50,
-            ),
-            !_isDownloading
-                ? InkWell(
-                    onTap: () async {
-                      _showMyDialog(_controller.text.trim());
-                    },
-                    autofocus: true,
-                    child: Card(
-                      child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        child: Text(
-                          "Download",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width * 0.05),
+                  child: Row(
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Row(
+                          children: [
+                            Text("Video\nDownloader",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                  fontSize: 50,
+                                )),
+                          ],
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.05,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.arrow_circle_down),
+                      border: OutlineInputBorder(gapPadding: 20),
+                      labelText: "Enter Video Url",
+                      // helperText: _controller.text.isEmpty ? "" : "Enter Url",
                     ),
-                  )
-                : CircularProgressIndicator(),
-            _isDownloading
-                ? InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return MyApp();
-                      }));
-                    },
-                    autofocus: true,
-                    child: Card(
-                      child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        child: Text(
-                          "Cancel",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue),
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.05,
+                ),
+                !_isDownloading
+                    ? InkWell(
+                        splashColor: Colors.blue,
+                        onTap: () async {
+                          if (_controller.text.isNotEmpty) {
+                            _showMyDialog(_controller.text.trim());
+                          }
+                        },
+                        autofocus: true,
+                        child: Card(
+                          elevation: 5,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.05,
+                              vertical:
+                                  MediaQuery.of(context).size.height * 0.02,
+                            ),
+                            child: Text(
+                              "Download",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )
-                : Container()
-          ],
+                      )
+                    : CircularProgressIndicator(),
+                _isDownloading
+                    ? InkWell(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return MyApp();
+                          }));
+                        },
+                        autofocus: true,
+                        child: Card(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container()
+              ],
+            ),
+          ),
         );
       }),
     );
