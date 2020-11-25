@@ -26,6 +26,7 @@ class _MyAppState extends State<MyApp> {
   bool _isDownloading = false;
   var downloadedPath = "";
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  String helperText = "";
 
   // Diaolog function
 
@@ -71,6 +72,21 @@ class _MyAppState extends State<MyApp> {
                 downloadFile(url, downloadedPath).then((value) {});
               },
             ),
+            TextButton(
+              child: Text('Cancel',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 20,
+                  )),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return MyApp();
+                }));
+                _scaffoldKey.currentState.removeCurrentSnackBar();
+                // Scaffold.of(context).hideCurrentSnackBar();
+              },
+            ),
           ],
         );
       },
@@ -104,8 +120,8 @@ class _MyAppState extends State<MyApp> {
                 _isDownloading = false;
               });
               showSnackBar("Downloaded.. ", 1000);
-
-              Scaffold.of(context).hideCurrentSnackBar();
+              _scaffoldKey.currentState.removeCurrentSnackBar();
+              // Scaffold.of(context).hideCurrentSnackBar();
               _showPlayConfirmation(path);
             } else {
               setState(() {
@@ -170,7 +186,10 @@ class _MyAppState extends State<MyApp> {
                         fontSize: 20,
                       )),
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return MyApp();
+                    }));
                     _scaffoldKey.currentState.removeCurrentSnackBar();
                     // Scaffold.of(context).hideCurrentSnackBar();
                   },
@@ -192,44 +211,72 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-            child: TextField(
-              controller: _controller,
-              decoration: InputDecoration(
+      body: Builder(builder: (BuildContext context) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
                   border: OutlineInputBorder(gapPadding: 20),
-                  labelText: "Enter Video Url"),
+                  labelText: "Enter Video Url",
+                  // helperText: _controller.text.isEmpty ? "" : "Enter Url",
+                ),
+              ),
             ),
-          ),
-          SizedBox(
-            height: 50,
-          ),
-          !_isDownloading
-              ? InkWell(
-                  onTap: () async {
-                    _showMyDialog(_controller.text.trim());
-                  },
-                  autofocus: true,
-                  child: Card(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      child: Text(
-                        "Enter",
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue),
+            SizedBox(
+              height: 50,
+            ),
+            !_isDownloading
+                ? InkWell(
+                    onTap: () async {
+                      _showMyDialog(_controller.text.trim());
+                    },
+                    autofocus: true,
+                    child: Card(
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: Text(
+                          "Download",
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue),
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : CircularProgressIndicator(),
-        ],
-      ),
+                  )
+                : CircularProgressIndicator(),
+            _isDownloading
+                ? InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return MyApp();
+                      }));
+                    },
+                    autofocus: true,
+                    child: Card(
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container()
+          ],
+        );
+      }),
     );
   }
 }
