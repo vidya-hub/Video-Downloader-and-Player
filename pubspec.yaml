@@ -29,6 +29,7 @@ dependencies:
   mime: ^0.9.7
   path_provider: ^1.6.24
   video_player: ^1.0.1
+  youtube_extractor: ^1.0.4
 
 dev_dependencies:
   flutter_test:

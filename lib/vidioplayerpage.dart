@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// import 'package:video_downloader/cdnbyeListener.dart';
 import 'package:video_downloader/main.dart';
 import 'package:video_player/video_player.dart';
+// import 'package:cdnbye/cdnbye.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final videoPath;
@@ -36,6 +38,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
   Future<void> initializePlayer() async {
     var videofile = File(widget.videoPath);
+    // Map info = CdnByeListener().videoInfo.value;
+    // print('Received SDK info: $info');
     _videoPlayerController1 = VideoPlayerController.file(videofile);
     await _videoPlayerController1.initialize();
     _chewieController = ChewieController(

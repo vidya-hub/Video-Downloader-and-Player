@@ -1,9 +1,14 @@
+import 'dart:io';
 import 'dart:math';
+// import 'package:cdnbye/cdnbye.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_downloader/vidioplayerpage.dart';
+import 'package:http/http.dart' as http;
+// import 'package:cdnbye/cdnbye.dart';
+import 'package:youtube_extractor/youtube_extractor.dart';
 
 void main() {
   runApp(
@@ -25,7 +30,7 @@ class _MyAppState extends State<MyApp> {
   var downloadedPath = "";
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String helperText = "";
-
+  var extractor = YouTubeExtractor();
   // Diaolog function
 
   Future _showMyDialog(String url) async {
@@ -98,13 +103,11 @@ class _MyAppState extends State<MyApp> {
     });
     Dio dio = Dio();
 
-    // print(randomNumber);
     try {
       print(lookupMimeType(url).toString());
       // var dir = await getExternalStorageDirectory();
       if (lookupMimeType(url).toString() == "video/mp4") {
-        showSnackBar("Downloading Started", 1000);
-
+        showSnackBar("Downloading Started", 10000);
         await dio.download(
           url,
           path,
@@ -118,7 +121,7 @@ class _MyAppState extends State<MyApp> {
                 _isDownloading = false;
               });
 
-              showSnackBar("Downloaded.. ", 1000);
+              showSnackBar("Downloaded.. ", 10000);
               _scaffoldKey.currentState.removeCurrentSnackBar();
               // Scaffold.of(context).hideCurrentSnackBar();
               _showPlayConfirmation(path);
@@ -134,10 +137,18 @@ class _MyAppState extends State<MyApp> {
 
         print(downloadedPath);
       } else {
-        print("incorrect");
-        showSnackBar("Enter the Correct Url", 1000);
+        print("hls");
         setState(() {
-          _isDownloading = false;
+          _isDownloading = true;
+        });
+        showSnackBar("HLS DOWNLOAD", 10000);
+        hlsreq(path).then((value) {
+          setState(() {
+            _isDownloading = false;
+          });
+          showSnackBar("Downloaded.. ", 10000);
+          _scaffoldKey.currentState.removeCurrentSnackBar();
+          _showPlayConfirmation(value);
         });
       }
     } catch (e) {
@@ -213,9 +224,52 @@ class _MyAppState extends State<MyApp> {
     // Scaffold.of(context).showSnackBar(snackBar);
   }
 
+  Future hlsreq(String path) async {
+    setState(() {
+      _isDownloading = true;
+    });
+    Uri apiUrl = Uri.parse('https://hlsdownloader.herokuapp.com/upload');
+    var downloadreq = http.MultipartRequest('POST', apiUrl);
+    downloadreq.fields["url"] =
+        "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8";
+    try {
+      final streamedResponse = await downloadreq.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      print(response.statusCode);
+      print(response.bodyBytes);
+      File file = new File(path);
+      await file.writeAsBytes(response.bodyBytes);
+      return file.path.toString();
+    } catch (e) {
+      print(e);
+      setState(() {
+        _isDownloading = true;
+      });
+      // return e;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // floatingActionButton: FloatingActionButton(
+      //   child: Text("HLS"),
+      //   onPressed: () {
+      //     hlsreq().then((value) {
+      //       setState(() {
+      //         _isDownloading = false;
+      //       });
+      //       Navigator.push(
+      //         context,
+      //         MaterialPageRoute(
+      //           builder: (context) {
+      //             return VideoPlayerPage(videoPath: value);
+      //           },
+      //         ),
+      //       );
+      //     });
+      //   },
+      // ),
       key: _scaffoldKey,
       // appBar: ,
       body: Builder(builder: (BuildContext context) {
@@ -271,7 +325,20 @@ class _MyAppState extends State<MyApp> {
                         splashColor: Colors.blue,
                         onTap: () async {
                           if (_controller.text.isNotEmpty) {
+                            // print(lookupMimeType(_controller.text.trim()));
                             _showMyDialog(_controller.text.trim());
+                            // var response = http.get(_controller.text.trim());
+                            // response.then((value) async {
+                            //   var rng = new Random();
+                            //   int randomNumber = rng.nextInt(90) + 10;
+                            //   var dir = await getExternalStorageDirectory();
+
+                            //   var videofile =
+                            //       File("${dir.path}/myFile_$randomNumber.mp4");
+                            //   print(videofile);
+                            //   videofile.writeAsBytesSync(value.bodyBytes);
+                            // });
+                            // videoStream();
                           }
                         },
                         autofocus: true,
